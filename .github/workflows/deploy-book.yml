@@ -1,53 +1,48 @@
 name: deploy-book
 
-# Only run this when the master branch changes
+# Trigger on changes to main branch
 on:
   push:
     branches:
-    - main
-    # If your git repository has the Jupyter Book within some-subfolder next to
-    # unrelated files, you can make this run only if a file within that specific
-    # folder has been modified.
-    #
-    # paths:
-    # - some-subfolder/**
+      - main
 
-# This job installs dependencies, builds the book, and pushes it to `gh-pages`
+# This job installs dependencies, builds the book, and deploys to `gh-pages`
 jobs:
   deploy-book:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed so GitHub Actions can push to gh-pages
+
     steps:
-    - uses: actions/checkout@v2
+      # Checkout the repository
+      - uses: actions/checkout@v3
 
-    # Install dependencies
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.13
-        
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    # Debug structure
-    - name: Debug structure
-      run: |
-        echo "Current directory: $(pwd)"
-        find . -maxdepth 3 -type f -name "_config.yml"
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Where am I?
-      run: |
-        pwd
-        ls -al
+      # Debug (optional)
+      - name: Debug structure
+        run: |
+          echo "Current directory: $(pwd)"
+          find . -maxdepth 3 -type f -name "_config.yml"
 
-    # Build the book
-    - name: Build the book
-      run: |
-        jupyter-book build .
+      # Build the Jupyter Book
+      - name: Build the book
+        run: jupyter-book build .
 
-    # Push the book's HTML to github-pages
-    - name: GitHub Pages action
-      uses: peaceiris/actions-gh-pages@v3.6.1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_build/html
+      # Deploy the built HTML to gh-pages branch
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_build/html
+          publish_branch: gh-pages
