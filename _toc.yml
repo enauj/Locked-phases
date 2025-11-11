@@ -2,9 +2,11 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book
-root: intro
-chapters:
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
-- file: content/ecology.md
+root: intro.md
+parts: 
+  - caption: Test
+    chapters:
+    - file: markdown.md
+    - file: notebooks.md
+    - file: markdown-notebooks.md
+    - file: content/ecology.md
